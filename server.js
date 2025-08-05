@@ -5,14 +5,12 @@ const express = require('express');
 const admin = require('firebase-admin');
 
 // IMPORTANT: Ensure your serviceAccountKey.json file is in the same directory as this server.js file.
-// Replace 'serviceAccountKey.json' with the actual name of your downloaded JSON file.
 // Retrieve the service account key from an environment variable
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 
-
 // Initialize the Firebase Admin SDK
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
 });
 
 // Initialize the Express app
@@ -34,18 +32,17 @@ app.post('/login', async (req, res) => {
   try {
     // Check if the user exists by email
     const userRecord = await admin.auth().getUserByEmail(email);
-
-    // If user exists, we can perform custom password authentication (not handled by Firebase Admin SDK)
-    // Firebase Admin SDK does not directly handle password validation, so we typically use Firebase Authentication client-side SDK for password-based authentication.
-    // For now, we assume the user exists and login is successful.
     
-    // Generate a custom token (you can use this token to authenticate users client-side)
-    const customToken = await admin.auth().createCustomToken(userRecord.uid);
-
-    // Send the custom token back to the client for further processing (e.g., use it to log in client-side)
+    // User exists, now send user data back (no token generation here)
+    // If you need to access user details like UID or custom claims, you can do that here.
     res.status(200).json({
       message: 'Login successful',
-      customToken: customToken, // This token can be used on the client-side for further authentication
+      user: {
+        uid: userRecord.uid, // UID can be sent to the client for further processing
+        email: userRecord.email,
+        displayName: userRecord.displayName,
+        // Any other fields you need can be accessed from userRecord
+      },
     });
   } catch (error) {
     // If user is not found
